@@ -1,0 +1,45 @@
+<?php require_once "../config.php"; ?>
+<div class="container py-4">
+  <h3 class="text-light mb-4">🧠 Estado del Servidor</h3>
+
+  <div id="server-status" class="p-4 bg-dark rounded shadow-sm text-center">
+    <h4 class="mb-3 text-info">Verificando estado del servidor...</h4>
+    <div class="spinner-border text-light" role="status"><span class="visually-hidden">Cargando...</span></div>
+  </div>
+
+  <script src="https://code.jquery.com/jquery-3.7.1.min.js"></script>
+  <script>
+  function updateServerStatus() {
+      $.get('../ajax/server_status.php', function(data) {
+          let html = '';
+
+          if (!data) {
+              $('#server-status').html('<div class="text-danger">❌ Error al obtener estado del servidor.</div>');
+              return;
+          }
+
+          const online = data.running ? '🟢 Online' : '🔴 Offline';
+          const port = data.port_open ? '🟢 Abierto' : '🔴 Cerrado';
+          const cpu = data.cpu !== null ? data.cpu + '%' : 'N/A';
+          const ram = data.ram ? data.ram.percent + '%' : 'N/A';
+          const time = data.timestamp;
+
+          html += `<h4 class="text-light mb-3">Estado General</h4>`;
+          html += `<div class="row text-center">
+                      <div class="col-md-3"><h5>Servidor</h5><p>${online}</p></div>
+                      <div class="col-md-3"><h5>CPU</h5><p>${cpu}</p></div>
+                      <div class="col-md-3"><h5>RAM</h5><p>${ram}</p></div>
+                      <div class="col-md-3"><h5>Puerto ${<?= $server_port ?>}</h5><p>${port}</p></div>
+                   </div>`;
+          html += `<hr><p class="text-secondary">Última actualización: ${time}</p>`;
+
+          $('#server-status').html(html);
+      }, 'json').fail(() => {
+          $('#server-status').html('<div class="text-danger">❌ No se pudo contactar al servidor.</div>');
+      });
+  }
+
+  updateServerStatus();
+  setInterval(updateServerStatus, 5000); // actualizar cada 5s
+  </script>
+</div>
